@@ -1,0 +1,68 @@
+[package]
+name = "aspect-examples"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Examples for aspect-rs AOP framework"
+publish = false
+
+[dependencies]
+aspect-core = { workspace = true }
+aspect-macros = { workspace = true }
+aspect-runtime = { workspace = true }
+aspect-std = { workspace = true }
+tokio = { version = "1.50.0", features = ["macros", "rt-multi-thread"] }
+axum = "0.7"
+serde = { version = "1", features = ["derive"] }
+axum-valid = "0.24.0"
+validator = { version = "0.20.0", features = ["derive"] }
+thiserror = "2.0.3"
+
+[[bin]]
+name = "logging"
+path = "src/logging.rs"
+
+[[bin]]
+name = "timing"
+path = "src/timing.rs"
+
+[[bin]]
+name = "caching"
+path = "src/caching.rs"
+
+[[bin]]
+name = "retry"
+path = "src/retry.rs"
+
+[[bin]]
+name = "security"
+path = "src/security.rs"
+
+[[bin]]
+name = "transaction"
+path = "src/transaction.rs"
+
+[[bin]]
+name = "validation"
+path = "src/validation.rs"
+
+[[bin]]
+name = "pointcuts"
+path = "src/pointcuts.rs"
+
+[[bin]]
+name = "api_server"
+path = "src/api_server.rs"
+
+[[bin]]
+name = "advanced_aspects"
+path = "src/advanced_aspects.rs"
+
+[[bin]]
+name = "async_func"
+path = "src/async_func.rs"
+
+[[bin]]
+name = "axum_site"
+path = "src/axum_site.rs"
