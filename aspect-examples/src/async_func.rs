@@ -1,5 +1,5 @@
-use aspect_core::{Aspect, JoinPoint};
-use aspect_macros::aspect;
+use aspect_core::{Aspect, AsyncAspect, AsyncJoinPoint, JoinPoint};
+use aspect_macros::{aspect, async_aspect};
 use aspect_std::{LoggingAspect, TimingAspect};
 
 #[tokio::main]
@@ -18,7 +18,7 @@ async fn add(a: i32, b: i32) -> i32 {
     a + b
 }
 
-#[aspect(Logger)]
+#[async_aspect(Logger1)]
 async fn sub(a: i32, b: i32) -> i32 {
     println!("  [APP] Subtracting {} - {}", a, b);
     a - b
@@ -26,14 +26,39 @@ async fn sub(a: i32, b: i32) -> i32 {
 
 #[derive(Default)]
 pub struct Logger;
-
 impl Aspect for Logger {
     fn before(&self, ctx: &JoinPoint) {
         let args = ctx
             .args
             .iter()
             .map(|arg| {
-                if let Some(v) = arg.downcast_ref::<String>() {
+                if let Some(v) = arg.downcast_ref::<i32>() {
+                    format!("{:?}", v)
+                } else {
+                    format!("{:?}", "<non-debug-arg>")
+                }
+            })
+            .collect::<Vec<_>>()
+            .join(", ");
+
+        println!(
+            "{}: {},{},{},[{}]",
+            ctx.function_name, ctx.module_path, ctx.location.file, ctx.location.line, args
+        );
+    }
+}
+
+
+
+#[derive(Default)]
+pub struct Logger1;
+impl AsyncAspect for Logger1 {
+    async fn before(&self, ctx: &AsyncJoinPoint) {
+        let args = ctx
+            .args
+            .iter()
+            .map(|arg| {
+                if let Some(v) = arg.downcast_ref::<i32>() {
                     format!("{:?}", v)
                 } else {
                     format!("{:?}", "<non-debug-arg>")
