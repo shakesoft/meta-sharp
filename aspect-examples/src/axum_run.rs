@@ -5,6 +5,7 @@ use axum::response::{IntoResponse, Response};
 use axum::{async_trait, extract::Query, routing::get, Json, Router};
 use serde::{Deserialize, Serialize};
 use std::any::Any;
+use std::future::Future;
 use std::net::SocketAddr;
 use thiserror::Error;
 use tokio::time::Instant;
@@ -38,10 +39,10 @@ fn build_hello_response(name: String, age: u64) -> HelloResponse {
     }
 }
 
-#[aspect(Logger1)]
+// #[aspect(Logger1)]
 async fn hello(Query(params): Query<HelloRequest>) -> impl IntoResponse {
     let res = add(1, 2).await;
-    println!("add result: {res}");
+    // println!("add result: {res}");
     let result = build_hello_response(
         params.user_name.clone().unwrap_or("Guest".to_string()),
         params.page_no,
@@ -50,20 +51,25 @@ async fn hello(Query(params): Query<HelloRequest>) -> impl IntoResponse {
     ok_result_data(result)
 }
 
-#[aspect(Logger)]
+// #[aspect(Timer)]
+// #[aspect(Logger)]
+// #[aspect(Logger)]
 fn test(num1:i32, num2:i32) {
     println!("=== Logging Aspect Example ===");
 }
 
-
+// #[aspect(Timer)]
 #[aspect(Logger1)]
-#[aspect(Logger2)]
+// #[aspect(Logger2)]
+// #[aspect(Logger)]
 async fn add(num1: i32, num2: i32) -> i32 {
     sub(num1, num2).await
 }
 
-#[aspect(Logger2)]
-#[aspect(Logger1)]
+// #[aspect(Timer)]
+// #[aspect(Logger1)]
+// #[aspect(Logger2)]
+// #[aspect(Logger)]
 async fn sub(num1: i32, num2: i32) -> i32 {
     num1 + num2
 }
@@ -84,6 +90,19 @@ async fn main() {
 }
 
 #[derive(Default)]
+pub struct Timer;
+impl Aspect for Timer {
+    fn around(&self, pjp: ProceedingJoinPoint) -> Result<Box<dyn Any>, AspectError>  {
+        let start = Instant::now();
+        let function_name = pjp.context().function_name;
+        let result = pjp.proceed();
+        let elapsed = start.elapsed();
+        println!("{} took {:?}", function_name, elapsed);
+        result
+    }
+}
+
+#[derive(Default)]
 pub struct Logger;
 impl Aspect for Logger {
     fn before(&self, ctx: &JoinPoint) {
@@ -98,7 +117,7 @@ impl Aspect for Logger {
             .and_then(|arg| arg.downcast_ref::<i32>())
             .copied();
 
-        println!("async before add args: num1={num1:?}, num2={num2:?}");
+        println!("sync before add args: num1={num1:?}, num2={num2:?}");
     }
 
     fn after(&self, ctx: &JoinPoint, result: &dyn Any) {
@@ -114,7 +133,7 @@ impl Aspect for Logger {
             .copied();
         let value = result.downcast_ref::<i32>().copied();
 
-        println!("async after add args: num1={num1:?}, num2={num2:?}, result={value:?}");
+        println!("sync after add args: num1={num1:?}, num2={num2:?}, result={value:?}");
     }
 }
 
@@ -137,7 +156,27 @@ impl AsyncAspect for Logger1 {
             .join(", ");
 
         println!(
-            "before {}: {},{},{},[{}]",
+            "before async {}: {},{},{},[{}]",
+            ctx.function_name, ctx.module_path, ctx.location.file, ctx.location.line, args
+        );
+    }
+
+    async fn after(&self, ctx: &AsyncJoinPoint, _result: &(dyn Any + Send + Sync)){
+        let args = ctx
+            .args
+            .iter()
+            .map(|arg| {
+                if let Some(v) = arg.downcast_ref::<i32>() {
+                    format!("{:?}", v)
+                } else {
+                    format!("{:?}", "<non-debug-arg>")
+                }
+            })
+            .collect::<Vec<_>>()
+            .join(", ");
+
+        println!(
+            "after async {}: {},{},{},[{}]",
             ctx.function_name, ctx.module_path, ctx.location.file, ctx.location.line, args
         );
     }
