@@ -60,7 +60,8 @@ fn test(num1:i32, num2:i32) {
 
 // #[aspect(Timer)]
 #[aspect(Logger1)]
-// #[aspect(Logger2)]
+#[aspect(Logger)]
+#[aspect(Logger2)]
 // #[aspect(Logger)]
 async fn add(num1: i32, num2: i32) -> i32 {
     sub(num1, num2).await
@@ -117,7 +118,7 @@ impl Aspect for Logger {
             .and_then(|arg| arg.downcast_ref::<i32>())
             .copied();
 
-        println!("sync before add args: num1={num1:?}, num2={num2:?}");
+        println!("Logger sync before add args: num1={num1:?}, num2={num2:?}");
     }
 
     fn after(&self, ctx: &JoinPoint, result: &dyn Any) {
@@ -133,7 +134,7 @@ impl Aspect for Logger {
             .copied();
         let value = result.downcast_ref::<i32>().copied();
 
-        println!("sync after add args: num1={num1:?}, num2={num2:?}, result={value:?}");
+        println!("Logger sync after add args: num1={num1:?}, num2={num2:?}, result={value:?}");
     }
 }
 
