@@ -51,9 +51,9 @@ async fn hello(Query(params): Query<HelloRequest>) -> impl IntoResponse {
     ok_result_data(result)
 }
 
-// #[aspect(Timer)]
-// #[aspect(Logger)]
-// #[aspect(Logger)]
+#[aspect(Timer)]
+#[aspect(Logger)]
+#[aspect(Logger)]
 fn test(num1:i32, num2:i32) {
     println!("=== Logging Aspect Example ===");
 }
@@ -62,15 +62,15 @@ fn test(num1:i32, num2:i32) {
 #[aspect(Logger1)]
 #[aspect(Logger)]
 #[aspect(Logger2)]
-// #[aspect(Logger)]
+#[aspect(Logger)]
 async fn add(num1: i32, num2: i32) -> i32 {
     sub(num1, num2).await
 }
 
 // #[aspect(Timer)]
-// #[aspect(Logger1)]
-// #[aspect(Logger2)]
-// #[aspect(Logger)]
+#[aspect(Logger1)]
+#[aspect(Logger2)]
+#[aspect(Logger)]
 async fn sub(num1: i32, num2: i32) -> i32 {
     num1 + num2
 }
